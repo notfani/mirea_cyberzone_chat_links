@@ -1,80 +1,77 @@
-function generateComplexCaptcha() {
+function generateCaptcha() {
+  const captchaValue = Math.random().toString(36).substring(2, 8);
+  document.getElementById("captchaValue").value = captchaValue;
+
   const canvas = document.getElementById("captchaCanvas");
   const ctx = canvas.getContext("2d");
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const captchaLength = 6;
-  let captchaText = "";
-
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = getRandomColor();
+  // Добавление фона
+  ctx.fillStyle = "#f2f2f2";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  for (let i = 0; i < 30; i++) {
-    ctx.strokeStyle = getRandomColor();
-    ctx.beginPath();
-    ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
-    ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
-    ctx.stroke();
+  // Добавление шума
+  for (let i = 0; i < 200; i++) {
+      ctx.fillStyle = `rgba(0,0,0,${Math.random()})`;
+      ctx.beginPath();
+      ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 1, 0, Math.PI * 2);
+      ctx.fill();
   }
 
-  for (let i = 0; i < captchaLength; i++) {
-    const char = chars[Math.floor(Math.random() * chars.length)];
-    captchaText += char;
-    ctx.font = `${Math.floor(Math.random() * 10) + 20}px Arial`;
-    ctx.fillStyle = getRandomColor();
-    ctx.save();
-    ctx.translate(30 * i + 15, 25);
-    ctx.rotate((Math.random() - 0.5) * 0.5);
-    ctx.fillText(char, 0, 0);
-    ctx.restore();
+  // Добавление линий
+  for (let i = 0; i < 15; i++) {
+      ctx.strokeStyle = `rgba(0,0,0,${Math.random()})`;
+      ctx.beginPath();
+      ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+      ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+      ctx.stroke();
   }
 
-  for (let i = 0; i < 5; i++) {
-    ctx.strokeStyle = getRandomColor();
-    ctx.beginPath();
-    ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
-    ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
-    ctx.stroke();
+  // Добавление искаженного разноцветного текста
+  ctx.font = "30px Arial";
+  for (let i = 0; i < captchaValue.length; i++) {
+      ctx.fillStyle = `hsl(${Math.random() * 360}, 100%, 50%)`; // Разноцветные символы
+      ctx.setTransform(1, Math.random() * 0.3, Math.random() * 0.3, 1, 0, 0); // Искажение текста
+      ctx.fillText(captchaValue[i], 20 + i * 30, 50);
   }
-
-  document.getElementById("captchaValue").value = captchaText;
-
-  function getRandomColor() {
-    const letters = "0123456789ABCDEF";
-    let color = "#";
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-  }
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // Сброс трансформации
 }
 
-window.onload = function () {
-  generateComplexCaptcha();
-  document.getElementById("captcha-submit").addEventListener("click", handleCaptchaSubmit);
-};
-
+// Проверка CAPTCHA и декодирование контента
 function handleCaptchaSubmit() {
   const userInput = document.getElementById("captcha-input").value;
   const correctCaptcha = document.getElementById("captchaValue").value;
   const message = document.getElementById("captcha-message");
 
   if (!userInput) {
-    message.textContent = "Введите CAPTCHA.";
-    message.style.color = "orange";
-    return;
+      message.textContent = "Введите CAPTCHA.";
+      message.style.color = "orange";
+      return;
   }
 
   if (userInput === correctCaptcha) {
-    message.textContent = "CAPTCHA успешно пройдена!";
-    message.style.color = "green";
-    document.getElementById("captcha-overlay").style.display = "none";
-    document.getElementById("content").style.display = "block";
+      message.textContent = "CAPTCHA успешно пройдена!";
+      message.style.color = "green";
+      document.getElementById("captcha-overlay").style.display = "none";
+      document.getElementById("content").style.display = "block";
+
+      // Декодирование контента из Base64
+      const encodedContent = "aHR0cHM6Ly92ay5jb20vYWxfZmVlZC5waHA="; // Пример закодированного контента
+      const decodedContent = atob(encodedContent);
+
+      // Отображение контента
+      document.getElementById("content").innerHTML = `
+          <h1>Добро пожаловать на защищённую страницу!</h1>
+          <p>${decodedContent}</p>
+      `;
   } else {
-    message.textContent = "Неверная CAPTCHA. Попробуйте снова.";
-    message.style.color = "red";
-    document.getElementById("captcha-input").value = "";
-    generateComplexCaptcha();
+      message.textContent = "Неверная CAPTCHA. Попробуйте снова.";
+      message.style.color = "red";
+      document.getElementById("captcha-input").value = "";
+      generateCaptcha(); // Генерация новой CAPTCHA при неудачной попытке
   }
 }
+
+// Инициализация
+window.addEventListener("load", generateCaptcha); // Генерация CAPTCHA при загрузке страницы
+document.getElementById("captcha-submit").addEventListener("click", handleCaptchaSubmit); // Обработчик отправки CAPTCHA
