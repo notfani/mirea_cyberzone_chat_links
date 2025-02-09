@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Защищённая страница с CAPTCHA</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <div id="captcha-overlay">
+            <div id="captcha-container">
+                <h1>Подтвердите, что вы не робот</h1>
+                <canvas id="captchaCanvas" width="200" height="80"></canvas>
+                <input
+                    type="text"
+                    id="captcha-input"
+                    placeholder="Введите CAPTCHA"
+                />
+                <button id="captcha-submit">Отправить</button>
+                <p id="captcha-message"></p>
+                <input type="hidden" id="captchaValue" />
+            </div>
+        </div>
+
+        <div id="content" style="display: none">
+            <h1>Добро пожаловать на защищённую страницу!</h1>
+            <p>Этот контент доступен только после прохождения CAPTCHA.</p>
+        </div>
+
+        <script src="captcha.js"></script>
+    </body>
+</html>
